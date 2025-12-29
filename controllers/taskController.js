@@ -8,13 +8,17 @@ const {
 const {
     createTaskSchema,
     updateTaskSchema,
+    taskQueryFilterSchema,
     taskIdSchema,
+    prioritySchema,
 } = require('../validator/taskSchema');
+
 const { handleError } = require('../utils/errorHandler');
 
 const addTask = async (req, res) => {
     try {
         const validatedTask = createTaskSchema.parse(req.body);
+
         const task = await addTaskService(validatedTask);
         return res.status(201).json(task);
     } catch (error) {
@@ -38,14 +42,31 @@ const updateTaskById = async (req, res) => {
     }
 };
 
-const getAllTasks = async (_req, res) => {
+const getAllTasks = async (req, res) => {
     try {
-        const tasks = await getDataService();
+
+        const params = req.query;
+        const validatedParams = taskQueryFilterSchema.parse(params);
+        const tasks = await getDataService(validatedParams);
         return res.status(200).json(tasks);
     } catch (error) {
         return handleError(error, res);
     }
 };
+
+const getAllTasksByPriority = async (req, res) => {
+    try {
+        const data = req.params.priority;
+        const validatedData = prioritySchema.parse(data); 
+
+        const tasks = await getDataService({ priority: validatedData });
+        
+        return res.status(200).json(tasks);
+    } catch (error) {
+        return handleError(error, res);
+    }
+};
+
 
 const getTaskById = async (req, res) => {
     try {
@@ -82,6 +103,7 @@ module.exports = {
     addTask,
     updateTaskById,
     getAllTasks,
+    getAllTasksByPriority,
     getTaskById,
     deleteTaskById,
 };

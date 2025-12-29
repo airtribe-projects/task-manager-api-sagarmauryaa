@@ -7,7 +7,9 @@ const readData = async () => {
     try {
         const fileContent = await fs.readFile(DATA_FILE_PATH, 'utf8');
         const parsed = JSON.parse(fileContent);
-        return Array.isArray(parsed) ? parsed : [];
+        const finalData = Array.isArray(parsed) ? parsed : []
+        const sortedData = finalData.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate)) 
+        return sortedData ?? [];
     } catch (error) {
         if (error.code === 'ENOENT') {
             return [];

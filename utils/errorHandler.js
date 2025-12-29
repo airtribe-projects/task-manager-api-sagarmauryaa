@@ -18,6 +18,7 @@ const formatZodError = (error) => {
 };
 
 const handleError = (error, res) => {
+    console.log("error", error);
     if (error instanceof ZodError || error?.name === 'ZodError') { 
         return res.status(400).json({
             errors: formatZodError(error),

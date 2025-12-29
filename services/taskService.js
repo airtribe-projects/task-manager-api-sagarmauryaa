@@ -1,14 +1,49 @@
 const { readData, writeData } = require("../utils/fileUtils");
 
-const getDataService = async () => {
-    return await readData();
+const getDataService = async (params) => {
+    const { completed, search, sort, order, priority } = params;
+
+    const data = await readData();
+    
+    let filteredData = data;
+    
+    if(completed !== undefined){
+        filteredData = data.filter(task => task.completed === completed);
+    }
+    
+    if (search){
+        filteredData = filteredData.filter(task => task.title.toLowerCase().includes(search));
+    }
+    
+    if (priority){
+        filteredData = filteredData.filter(task => task.priority === priority);
+    }
+    
+    const sortedData = filteredData.sort((a, b) => {
+        if (sort === 'createdDate') {
+            return order === 'asc' ? new Date(a.createdDate) - new Date(b.createdDate) : new Date(b.createdDate) - new Date(a.createdDate);
+        }
+        if (sort === 'updatedDate') {
+            return order === 'asc' ? new Date(a.updatedDate) - new Date(b.updatedDate) : new Date(b.updatedDate) - new Date(a.updatedDate);
+        }
+        return 0;
+    });
+    
+    return sortedData;
 };
 
 const addTaskService = async (newTask) => {
     const data = await readData();
     const nextId =
         data.length === 0 ? 1 : Math.max(...data.map(t => t.id)) + 1;
-    const newTaskWithId = { ...newTask, id: nextId };
+  
+    const createdDate = new Date();
+
+    const newTaskWithId = {
+        id: nextId,
+        createdDate,
+        ...newTask,
+    };
     data.push(newTaskWithId);
     await writeData(data);
     return newTaskWithId;
@@ -17,6 +52,7 @@ const addTaskService = async (newTask) => {
 const updateTaskByIdService = async (id, updatedTask) => {
     const data = await readData();
     const index = data.findIndex(task => task.id === id);
+    const updatedDate = new Date();
 
 
     if (index === -1) {
@@ -24,9 +60,10 @@ const updateTaskByIdService = async (id, updatedTask) => {
     }
 
     data[index] = {
+        id: data[index].id,
+        updatedDate,
         ...data[index],
         ...updatedTask,
-        id: data[index].id,
     };
     await writeData(data);
     return data[index];
