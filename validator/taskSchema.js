@@ -3,28 +3,15 @@ const { z } = require('zod');
 const taskBaseSchema = {
     title: z
         .string()
-        .min(3, 'Title must be at least 3 characters')
-        .max(100, 'Title must be less than 100 characters'),
-
+        .trim().min(1, 'Title is required'),
     description: z
         .string()
-        .min(5, 'Description must be at least 5 characters')
-        .max(500, 'Description must be less than 500 characters')
-        .optional(),
-
-    completed: z.boolean().default(false),
+        .trim().min(1, 'Description is required'),
+    completed: z.boolean().default(false).refine((val) => val === true || val === false, 'Completed must be a boolean value (true or false)').optional()
 };
 
 const createTaskSchema = z.object({
-    title: z
-        .string()
-        .min(3, 'Title must be at least 3 characters')
-        .max(100, 'Title must be less than 100 characters'),
-    description: z
-        .string()
-        .min(5, 'Description must be at least 5 characters')
-        .max(500, 'Description must be less than 500 characters'),
-    completed: z.boolean().default(false),
+    ...taskBaseSchema,
 }).strict();
 
 const updateTaskSchema = z

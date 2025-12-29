@@ -1,16 +1,14 @@
 const { ZodError } = require('zod');
 
-
 const formatZodError = (error) => {
-    if (!error || !error.errors || !Array.isArray(error.errors)) {
+    if (!error || !error.issues || !Array.isArray(error.issues)) {
         return { root: 'Validation error', message: 'Invalid request data' };
     }
 
     const formatted = {};
 
-    error.errors.forEach(err => {
-        const field = err.path && err.path.length > 0 ? err.path[0] : 'root';
-
+    error.issues.forEach(err => {
+        const field = err.path && err.path.length > 0 ? err.path[0] : 'root'; 
         if (!formatted[field]) {
             formatted[field] = err.message;
         }
@@ -19,24 +17,18 @@ const formatZodError = (error) => {
     return formatted;
 };
 
-
 const handleError = (error, res) => {
-    if (error instanceof ZodError || (error && error.name === 'ZodError')) {
+    if (error instanceof ZodError || error?.name === 'ZodError') { 
         return res.status(400).json({
             errors: formatZodError(error),
         });
     }
 
-    if (error && error.statusCode) {
-        return res.status(error.statusCode).json({
-            error: error.message,
-        });
+    if (error?.statusCode) {
+        return res.status(error.statusCode).json({ error: error.message });
     }
 
-    return res.status(500).json({
-        error: 'Internal Server Error',
-    });
+    return res.status(500).json({ error: 'Internal Server Error' });
 };
 
 module.exports = { handleError };
-
